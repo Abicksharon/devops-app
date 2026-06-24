@@ -18,17 +18,26 @@ pipeline {
                 docker push abicksharon/devops-app:${BUILD_NUMBER}
                 '''
             }
-        }
+      }
 
-        stage('Deploy To Kubernetes') {
-            steps {
-                sh '''
-                export KUBECONFIG=/var/lib/jenkins/.kube/config
+               
+         stage('Deploy To Kubernetes') {
+    steps {
+        sh '''
+        export KUBECONFIG=/var/lib/jenkins/.kube/config
 
-                kubectl set image deployment/devops-app \
-                devops-app=abicksharon/devops-app:${BUILD_NUMBER}
-                '''
-            }
-        }
+        kubectl create deployment devops-app \
+        --image=abicksharon/devops-app:${BUILD_NUMBER} \
+        --dry-run=client -o yaml | kubectl apply -f -
+
+        kubectl expose deployment devops-app \
+        --type=NodePort \
+        --port=80 \
+        --dry-run=client -o yaml | kubectl apply -f -
+        '''
+    }
+}
+
+
     }
 }
