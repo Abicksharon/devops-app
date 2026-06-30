@@ -21,23 +21,17 @@ pipeline {
       }
 
                
-         stage('Deploy To Kubernetes') {
+stage('Deploy Using Helm') {
     steps {
         sh '''
         export KUBECONFIG=/var/lib/jenkins/.kube/config
 
-        kubectl create deployment devops-app \
-        --image=abicksharon/devops-app:${BUILD_NUMBER} \
-        --dry-run=client -o yaml | kubectl apply -f -
-
-        kubectl expose deployment devops-app \
-        --type=NodePort \
-        --port=80 \
-        --dry-run=client -o yaml | kubectl apply -f -
+        helm upgrade --install devops-app ./helm \
+          --set image.repository=abicksharon/devops-app \
+          --set image.tag=${BUILD_NUMBER}
         '''
     }
 }
 
-
-    }
+}
 }
